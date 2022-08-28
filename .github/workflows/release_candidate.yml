@@ -18,8 +18,25 @@ on:
         required: true
 
 jobs:
+  secrets:
+    name: Check Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      secrets: ${{ steps.has-secrets.outputs.secrets }}
+    steps:
+      - name: Check Secrets
+        id: has-secrets
+        env:
+          HAS_GITHUB_TOKEN: ${{ secrets.gh_token != '' }}
+          HAS_NPM_TOKEN: ${{ secrets.npm_token != '' }}
+        if: env.HAS_GITHUB_TOKEN == 'true' && env.HAS_NPM_TOKEN == 'true'
+        run:
+          echo "::set-output name=secrets::1"
+
   release-candidate:
     name: Candidate
+    needs: secrets
+    if: needs.secrets.outputs.secrets
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
